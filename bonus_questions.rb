@@ -128,111 +128,104 @@ end
 
 # Write code here
 require 'pry'
-def num_points_scored(player_name)
-  
-  game_hash.each do |home_then_away, hash|
-    hash.each do |titles, info|
-      if titles == :players
-        all_hashes = info
-        all_hashes.each do |each_player_hash|
-          if each_player_hash[:player_name] == player_name
-            return each_player_hash[:points]
-          end
-        end
-      end
-    end
-  end
-end
 
-def shoe_size(player_name)
-  
-  game_hash.each do |home_then_away, hash|
-    hash.each do |titles, info|
-      if titles == :players
-        all_hashes = info
-        all_hashes.each do |each_player_hash|
-          if each_player_hash[:player_name] == player_name
-            return each_player_hash[:shoe]
-          end
-        end
-      end
-    end
-  end
-end
-
-def team_colors(team_name)
-  game_hash.each do |home_then_away, hash|
-    hash.each do |titles, info|
-      if titles == :team_name
-        if team_name == info
-          return hash[:colors]
-        end
-      end
-    end
-  end
-end
-  
-def team_names
-  inner_team_names = []
-  game_hash.each do |home_then_away, hash|
-    hash.each do |titles, info|
-      if titles == :team_name
-        inner_team_names << hash[:team_name]
-      end
-    end
-  end
-  return inner_team_names
-end
-
-def player_numbers(team_name)
-  jersey_numbers = []
-  game_hash.each do |home_then_away, hash|
-    hash.each do |titles, info|
-      if titles == :team_name
-        if info == team_name
-          while jersey_numbers.length < 5 do
-            jersey_numbers << hash[:players][jersey_numbers.length][:number]
-          end
-        end
-      end
-    end
-  end
-  jersey_numbers
-end
-        
-def player_stats(player_name)
-  game_hash.each do |home_then_away, hash|
-    hash.each do |titles, info|
-      if titles == :players
+def most_points_scored
+  mvp_points = 0
+  mvp_name = ''
+  game_hash.each do |home_then_away, team_hash|
+    team_hash.each do |team_color_players, players_array|
+      if team_color_players == :players
         i = 0
-        while i < info.length do
-          if hash[:players][i][:player_name] == player_name
-            return hash[:players][i]
+        while i < players_array.length do
+          if players_array[i][:points] > mvp_points
+            mvp_points = players_array[i][:points]
+            mvp_name = players_array[i][:player_name]
+          end
+        i += 1
+        end
+      end
+    end
+  end
+  return "#{mvp_name} was the MVP with #{mvp_points} points"
+end
+
+def winning_team
+  home_team_score = 0
+  away_team_score = 0
+  x = 0
+  game_hash.each do |home_then_away, team_hash|
+    sum = 0
+    team_hash.each do |team_color_players, players_array|
+      if team_color_players == :players
+        i = 0
+        while i < players_array.length do
+          sum += players_array[i][:points]
+          i += 1
+        end    #CLOSING I ITERATION FOR PLAYERS
+        if x == 0
+          home_team_score = sum
+        else
+          away_team_score = sum
+        end
+      end     #CLOSING PLAYERS ARRAY loop
+    end       #TEAM_COLOR_PLAYERS loop
+    x += 1
+  end         #CLOSING HOME_THEN_AWAY loop
+  
+  if home_team_score > away_team_score
+    winning_team = game_hash[:home][:team_name]
+    losing_team = game_hash[:away][:team_name]
+    return "Tonight the #{winning_team} defeated the #{losing_team} with a final score of #{home_team_score} to #{away_team_score}."
+  elsif home_team_score < away_team_score
+    winning_team = game_hash[:away][:team_name]
+    losing_team = game_hash[:home][:team_name]
+    return "Tonight the #{winning_team} defeated the #{losing_team} with a final score of #{away_team_score} to #{home_team_score}."
+  else 
+    return "Tonights game was a draw between #{game_hash[:home][:team_name]} and the #{game_hash[:away][:team_name]} with a final score of #{home_team_score} to #{away_team_score}."
+  end
+end 
+
+def player_with_longest_name
+  longest_name = ''
+  game_hash.each do |home_then_away, team_hash|
+    team_hash.each do |team_color_players, players_array|
+      if team_color_players == :players
+        i = 0
+        while i < players_array.length do
+          if players_array[i][:player_name].length > longest_name.length
+            longest_name = players_array[i][:player_name]
           end
           i += 1
         end
       end
     end
   end
+  return longest_name
 end
 
-def big_shoe_rebounds
-  biggest_shoe = 0
-  number_of_rebounds = ''
-  game_hash.each do |home_then_away, hash|
-    hash.each do |team_colors_players, players_hash|
-      if team_colors_players == :players
+def long_name_steals_a_ton(player_with_long)
+  most_steals = 0
+  player_with_most_steals = ''
+  game_hash.each do |home_then_away, team_hash|
+    team_hash.each do |team_color_players, players_array|
+      if team_color_players == :players
         i = 0
-        while i < players_hash.length do
-          if players_hash[i][:shoe] > biggest_shoe
-            biggest_shoe = players_hash[i][:shoe]
-            number_of_rebounds = players_hash[i][:rebounds]
+        while i < players_array.length do
+          if players_array[i][:steals] > most_steals
+            most_steals = players_array[i][:steals]
+            player_with_most_steals = players_array[i][:player_name]
           end
           i += 1
         end
       end
     end
   end
-  return number_of_rebounds
+  binding.pry
+  if player_with_long == player_with_most_steals
+    return true
+  else
+    return false
+  end
 end
-
+  
+puts winning_team
